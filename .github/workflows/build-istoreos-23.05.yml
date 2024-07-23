@@ -34,8 +34,8 @@ jobs:
           # - istoreos-22.03
           - istoreos-23.05
         ARCHITECTURE:
-          - rk33xx
-          - rk35xx
+          #- rk33xx
+          #- rk35xx
           - x86
         os:
           - ubuntu-22.04
@@ -222,3 +222,5 @@ jobs:
       with:
         keep_latest: 6
         delete_tags: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
