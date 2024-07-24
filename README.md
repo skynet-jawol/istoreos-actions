@@ -22,7 +22,7 @@
 
 # 一、简介
 
-该项目从[draco-china/istoreos-actions](https://github.com/draco-china/istoreos-actions)进行定制，添加5G模块官方支持和一些常用插件
+该项目从[Siriling/istoreos-actions](https://github.com/Siriling/istoreos-actions)进行定制，添加5G模块官方支持和一些常用插件
 
 # 二、源代码地址
 
@@ -32,7 +32,6 @@
 
 ## 功能特性
 
-- 移除 ddnsto
 - 移除 bootstrap 主题
 - 添加5G模块官方驱动和官方拨号工具
 - 添加5G短信插件
@@ -42,7 +41,6 @@
   - ADGuardHome
   - Socat
   - 解锁网易云音乐播放限制
-  - UU游戏加速器
 
 
 
@@ -58,35 +56,9 @@
 
 ## 支持架构
 
-- RK33xx
-- RK35xx
 - x86
 
 ## 架构对应的镜像包名称
-
-### RK33xx 架构
-
-| 设备       | 包名称                                                                    |
-| ---------- | ------------------------------------------------------------------------- |
-| R2S        | istoreos-rockchip-armv8-friendlyarm_nanopi-r2s-squashfs-sysupgrade.img.gz |
-| R4S        | istoreos-rockchip-armv8-friendlyarm_nanopi-r4s-squashfs-sysupgrade.img.gz |
-| R4SE       | istoreos-rockchip-armv8-friendlyarm_nanopi-r4se-squashfs-sysupgrade.img.gz |
-| ROCK-PI-4A | istoreos-rockchip-armv8-radxa_rock-pi-squashfs-sysupgrade.img.gz           |
-| ROCKPRO64  | istoreos-rockchip-armv8-pine64_rockpro64-squashfs-sysupgrade.img.gz        |
-
-### RK35xx 架构
-
-| 设备           | 包名称                                                       |
-| -------------- | ------------------------------------------------------------ |
-| H28K           | istoreos-rockchip-rk35xx-hlink_h28k-squashfs-sysupgrade.img.gz |
-| H66K/H68K/H69K | istoreos-rockchip-rk35xx-hinlink_opc-h6xk-squashfs-combined.img.gz |
-| H88K           | istoreos-rockchip-rk35xx-hinlink_h88k-squashfs-combined.img.gz |
-| NANOPI-R5S     | istoreos-rockchip-rk35xx-friendlyarm_nanopi-r5s-squashfs-combined.img.gz |
-| NANOPI-R6S     | istoreos-rockchip-rk35xx-friendlyarm_nanopi-r6s-squashfs-combined.img.gz |
-| R66S/R68S      | istoreos-rockchip-rk35xx-fastrhino_r6xs-squashfs-combined.img.gz |
-| STATION-P2     | istoreos-rockchip-rk35xx-firefly_station-p2-squashfs-combined.img.gz |
-| T68M           | istoreos-rockchip-rk35xx-lyt_t68m-squashfs-combined.img.gz   |
-| XGP            | istoreos-rockchip-rk35xx-nlnet_xgp-squashfs-combined.img.gz  |
 
 ### x86 架构
 
