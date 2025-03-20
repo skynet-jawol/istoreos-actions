@@ -36,4 +36,4 @@ jobs:
       with:
         retain_days: 1
         keep_minimum_runs: 2
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.ACCESS_TOKEN }}
