@@ -48,8 +48,6 @@ jobs:
           # - istoreos-22.03
           - istoreos-23.05
         ARCHITECTURE:
-          - rk33xx
-          - rk35xx
           - x86
         os:
           - ubuntu-22.04
@@ -222,7 +220,7 @@ jobs:
         path: ${{ env.FIRMWARE }}
 
     - name: 生成发布标签
-      id: 标签
+      id: tag
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
         echo "::set-output name=release_tag::${{ matrix.ARCHITECTURE }}-23.05"
@@ -256,7 +254,7 @@ jobs:
       with:
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
-        文件: ${{ env.FIRMWARE }}/*
+        files: ${{ env.FIRMWARE }}/*
 
     - name: 删除运行记录
       uses: GitRML/delete-workflow-runs@main
