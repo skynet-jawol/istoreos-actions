@@ -1,26 +1,6 @@
 name: Build iStore OS 23.05
 
 on:
-  repository_dispatch:
-  workflow_dispatch:
-    inputs:
-      lan_ip:
-        description: '设置LAN IP地址'
-        required: true
-        default: '192.168.10.1'
-      os_name:
-        description: '设置系统名称'
-        required: true
-        default: 'iStore OS'
-      enable_wifi:
-        description: '启用WiFi'
-        required: true
-        default: true
-        type: boolean
-      ssh:
-        description: 'SSH connection to Actions'
-        required: false
-        default: 'false'
   schedule:
    - cron: 0 16 * * *
 
