@@ -1,6 +1,6 @@
 name: Sync Files
 
-on:
+于:
   repository_dispatch:
   workflow_dispatch:
   schedule:
@@ -22,7 +22,7 @@ jobs:
     - name: 同步配置
       uses: peaceiris/actions-gh-pages@v3
       with:
-        personal_token: ${{ secrets.GITHUB_TOKEN }}
+        personal_token: ${{ secrets.ACCESS_TOKEN }}
         publish_branch: main
         publish_dir: ./
         user_name: 'GitHub Action'
@@ -36,4 +36,4 @@ jobs:
       with:
         retain_days: 1
         keep_minimum_runs: 2
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.ACCESS_TOKEN }}
