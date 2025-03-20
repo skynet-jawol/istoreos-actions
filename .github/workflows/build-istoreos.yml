@@ -1,15 +1,28 @@
 name: Build iStore OS
 
-on:
+于:
   repository_dispatch:
   workflow_dispatch:
     inputs:
+      lan_ip:
+        description: '设置LAN IP地址'
+        required: true
+        默认: '192.168.10.1'
+      os_name:
+        description: '设置系统名称'
+        required: true
+        默认: 'iStore OS'
+      enable_wifi:
+        description: '启用WiFi'
+        required: true
+        默认: true
+        type: boolean
       ssh:
         description: 'SSH connection to Actions'
         required: false
-        default: 'false'
+        默认: 'false'
   schedule:
-  # - cron: 0 16 * * *
+   - cron: 0 16 * * *
 
 env:
   REPO_URL: https://github.com/istoreos/istoreos
@@ -18,6 +31,7 @@ env:
   CONFIG_FILE: .config
   DIY_P1_SH: scripts/diy-part1.sh
   DIY_P2_SH: scripts/diy-part2.sh
+  WORK_DIR: /mnt/workdir
   UPLOAD_BIN_DIR: true
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
@@ -71,7 +85,7 @@ jobs:
         DEBIAN_FRONTEND: noninteractive
       run: |
         echo "------------------------------- 更新并安装依赖 -------------------------------"
-        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
+        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /etc/mysql /etc/php /usr/local/lib/android /opt/ghc
         sudo -E apt-get -qq update
         sudo -E apt-get -qq install $(cat $GITHUB_WORKSPACE/depends/${{ matrix.os }})
         wget https://bootstrap.pypa.io/pip/3.6/get-pip.py
@@ -79,21 +93,22 @@ jobs:
         sudo rm -rf get-pip.py
         sudo pip install pyelftools
         echo "------------------------------- 清理Docker镜像和软件 -------------------------------"
+        docker rmi `docker images -q`
         docker image prune -a -f
-        sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mysql* php* mongodb* dotnet* moby* snapd* android* || true
+        sudo -E apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* adoptopenjdk* mysql* php* mongodb* dotnet* moby* snapd* android* || true
         sudo -E apt-get -qq autoremove --purge
         sudo -E apt-get -qq clean
         echo "------------------------------- 设置工作目录及时区 -------------------------------"
         sudo timedatectl set-timezone "$TZ"
-        sudo mkdir -p /workdir
-        sudo chown $USER:$GROUPS /workdir
+        sudo mkdir -p /mnt/workdir
+        sudo chown $USER:$GROUPS /mnt/workdir
 
     - name: 克隆源码
-      working-directory: /workdir
+      working-directory: /mnt/workdir
       run: |
         df -hT $PWD
         git clone $REPO_URL -b ${{ matrix.REPO_BRANCH }} openwrt
-        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+        ln -sf /mnt/workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
     - name: 缓存构建动作
       uses: klever1988/cachewrtbuild@main
@@ -126,6 +141,33 @@ jobs:
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH ${{ matrix.ARCHITECTURE }}
+
+    - name: 设置LAN IP地址（路由器登录地址）
+      run: |
+        cd openwrt
+        SET_IP=${{ github.event.inputs.lan_ip }}
+        if [ -z "$SET_IP" ]; then
+            SET_IP="192.168.10.1"
+        fi
+        #修改默认IP地址
+        sed -i "s/192\.168\.[0-9]*\.[0-9]*/$SET_IP/g" package/base-files/files/bin/config_generate
+        echo "Set LAN IP Address: $SET_IP"
+
+    - name: 设置系统名称
+      run: |
+        cd openwrt
+        set_os_name="${{ github.event.inputs.os_name }}"
+        if [ -z "$set_os_name" ]; then
+            set_os_name="iStore OS"
+        fi
+        sed -i "s/OpenWrt/${set_os_name}/g" package/base-files/files/bin/config_generate
+        echo "Set OS name : ${set_os_name}"
+
+    - name: 启用WiFi
+      if: github.event.inputs.enable_wifi == 'true'
+      run: |
+        cd openwrt
+        sed -i 's/disabled=1/disabled=0/g' package/kernel/mac80211/files/lib/wifi/mac80211.sh
 
     - name: SSH 连接到 Actions
       uses: P3TERX/ssh2actions@v1.0.0
@@ -180,10 +222,14 @@ jobs:
         path: ${{ env.FIRMWARE }}
 
     - name: 生成发布标签
-      id: tag
+      id: 标签
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
         echo "::set-output name=release_tag::${{ matrix.ARCHITECTURE }}"
+        SET_IP=${{ github.event.inputs.lan_ip }}
+        if [ -z "$SET_IP" ]; then
+            SET_IP="192.168.10.1"
+        fi
         touch release.txt
         echo "
         💻 架构: ${{ matrix.ARCHITECTURE }}
@@ -194,11 +240,14 @@ jobs:
 
         ⏱️ 编译时间: $(date +"%Y年%m月%d日%H时%M分")
 
-        🌐 管理地址: 192.168.10.1
+        🌐 管理地址: ${SET_IP}
 
         👤 用户名: root
 
-        🔒 密码: password " >> release.txt
+        🔒 密码: password
+
+        📒 说明: 单网口设备默认网口为LAN（旁路由模式），需要接入主路由器后进后台查找对应IP地址访问。
+                 双网口及以上设备，默认网口为WAN+LAN（主路由模式），接入LAN可直接访问 " >> release.txt
         echo "::set-output name=status::success"
 
     - name: 自动发布固件到 Releases
@@ -207,7 +256,7 @@ jobs:
       with:
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
-        files: ${{ env.FIRMWARE }}/*
+        文件: ${{ env.FIRMWARE }}/*
 
     - name: 删除运行记录
       uses: GitRML/delete-workflow-runs@main
