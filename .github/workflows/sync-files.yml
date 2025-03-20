@@ -1,6 +1,6 @@
 name: Sync Files
 
-于:
+on:
   repository_dispatch:
   workflow_dispatch:
   schedule:
@@ -36,4 +36,4 @@ jobs:
       with:
         retain_days: 1
         keep_minimum_runs: 2
-        token: ${{ secrets.ACCESS_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
