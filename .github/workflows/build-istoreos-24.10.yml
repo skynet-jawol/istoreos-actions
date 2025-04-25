@@ -4,6 +4,19 @@ on:
   repository_dispatch:
   workflow_dispatch:
     inputs:
+      lan_ip:
+        description: '设置LAN IP地址'
+        required: true
+        default: '192.168.10.1'
+      os_name:
+        description: '设置系统名称'
+        required: true
+        default: 'iStore OS'
+      enable_wifi:
+        description: '启用WiFi'
+        required: true
+        default: false
+        type: boolean
       ssh:
         description: 'SSH connection to Actions'
         required: false
@@ -33,9 +46,12 @@ jobs:
         REPO_BRANCH:
           # - main
           # - istoreos-22.03
+          # - istoreos-23.05
           - istoreos-24.10
         ARCHITECTURE:
-          - x86
+          - rk33xx-24.10
+          - rk35xx-24.10
+          - x86-24.10
         os:
           - ubuntu-22.04
 
@@ -141,7 +157,7 @@ jobs:
     - name: 设置系统名称
       run: |
         cd openwrt
-        set_os_name=${{ github.event.inputs.os_name }}
+        set_os_name="${{ github.event.inputs.os_name }}"
         if [ -z "$set_os_name" ]; then
             set_os_name="iStore OS"
         fi
@@ -210,7 +226,7 @@ jobs:
       id: tag
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
-        echo "::set-output name=release_tag::${{ matrix.ARCHITECTURE }}-23.05"
+        echo "::set-output name=release_tag::${{ matrix.ARCHITECTURE }}"
         SET_IP=${{ github.event.inputs.lan_ip }}
         if [ -z "$SET_IP" ]; then
             SET_IP="192.168.10.1"
@@ -231,8 +247,7 @@ jobs:
 
         🔒 密码: password
 
-        📒 说明: 单网口设备默认网口为LAN（旁路由模式），需要接入主路由器后进后台查找对应IP地址访问
-                 双网口及以上设备，默认网口为WAN+LAN（主路由模式），接入LAN可直接访问 " >> release.txt
+        📒 说明: 单网口设备默认网口为LAN（旁路由模式），需要接入主路由器后进后台查找对应IP地址访问。双网口及以上设备，默认网口为WAN+LAN（主路由模式），接入LAN可直接访问" >> release.txt
         echo "::set-output name=status::success"
 
     - name: 自动发布固件到 Releases
@@ -248,7 +263,7 @@ jobs:
       with:
         retain_days: 1
         keep_minimum_runs: 3
-        token: ${{ env.ACCESS_TOKEN }}
+        token: ${{ env.GITHUB_TOKEN }}
 
     - name: 删除自动发布的旧固件
       uses: dev-drprasad/delete-older-releases@v0.1.0
